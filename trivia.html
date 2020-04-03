@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>#7Days7Websites - day 2 Trivia Quiz</title>
+  <meta name="description" content="#7Days7Websites - day 2 Trivia Quiz">
+  <meta name="challenge" content="#7Days7Websites">
+  <meta name="author" content="ascaliko">
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/skeleton.css">
+
+  <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="icon" type="image/png" href="images/favicon.png">
+
+  <!-- Vuejs -->
+  <script src="js/vue.min.js"></script>
+</head>
+<body>
+
+  <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <div class="container">
+    <div class="row">
+		<dir class="column" style="margin-top: 2%;">
+		    <h1>Trivia Quiz</h1>
+		</dir>
+    </div>
+    <div class="row" id="app">
+		<div class="one-half column">
+	    	<label>{{ binLabel }}</label>
+	    	<input id="inputBinary" type="text" maxlength="10" v-model:value="inputBinary" @keypress="isNumber" style="width: 100%;" />
+	        <label>{{ decLabel }}</label>
+	        <input id="inputDecimal" type="text" v-model:value="inputDecimal" readonly="" style="width: 100%;" />
+	        <br>
+	        <button class="button-primary" @click="convertBin2Dec" style="width: 49.5%;">Convert!</button>
+	        <button class="button-warning" @click="isReset" style="width: 49.5%;">Reset!</button>
+		</div>
+		<div class="one-half column" style="margin-top: 2%">
+			<h3>Your Binary is <b>{{ inputBinary }}</b></h3>
+			<h3>The Decimal is <b>{{ inputDecimal }}</b></h3>
+		</div>
+    </div>
+  </div>
+
+<script type="text/javascript">
+	console.log(`#7Days7Websites`);
+    var app = new Vue({
+        el: "#app",
+        data: {
+        	binLabel: "Binary",
+            inputBinary: 0,
+            decLabel: "Decimal",
+            inputDecimal: 0
+        },
+		methods: {
+			isReset: function($event) {
+				this.inputBinary = 0;
+				this.inputDecimal = 0;
+			},
+			isNumber: function($event) {
+			   	let keyCode = ($event.keyCode ? $event.keyCode : $event.which);
+			   	if (keyCode === 49 || keyCode === 48) { // 49 is 1, 48 is 0
+			   		return true;
+			   	} else {
+			    	$event.preventDefault();;
+			   	}
+			},
+			convertBin2Dec: function(){
+				let biner = (this.inputBinary).toString();
+				let splitBiner = (biner.split('')).reverse();
+
+				var resultConvert = 0;
+				for(let i = splitBiner.length - 1; i >= 0; i--) {
+					resultConvert += (parseInt(splitBiner[i]) * (Math.pow(2, i)));
+				}
+
+				this.inputDecimal = resultConvert;
+			}
+		}
+    })
+
+</script>
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>
