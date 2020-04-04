@@ -5,8 +5,8 @@
   <!-- Basic Page Needs
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   <meta charset="utf-8">
-  <title>#7Days7Websites - day 2 Trivia Quiz</title>
-  <meta name="description" content="#7Days7Websites - day 2 Trivia Quiz">
+  <title>#7Days7Websites - day 2 Trivia Random Quiz</title>
+  <meta name="description" content="#7Days7Websites - day 2 Trivia Random Quiz">
   <meta name="challenge" content="#7Days7Websites">
   <meta name="author" content="ascaliko">
 
@@ -29,71 +29,74 @@
 
   <!-- Vuejs -->
   <script src="js/vue.min.js"></script>
+  <script src="js/vue-router.min.js"></script>
+  <script src="js/httpVueLoader.js"></script>
+  <!-- JQuery -->
+  <script src="js/jquery-3.4.1.min.js"></script>
+  <script src="js/jquery.modal.min.js"></script>
+
 </head>
 <body>
-
-  <!-- Primary Page Layout
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <div class="container">
-    <div class="row">
-		<dir class="column" style="margin-top: 2%;">
-		    <h1>Trivia Quiz</h1>
-		</dir>
-    </div>
-    <div class="row" id="app">
-		<div class="one-half column">
-	    	<label>{{ binLabel }}</label>
-	    	<input id="inputBinary" type="text" maxlength="10" v-model:value="inputBinary" @keypress="isNumber" style="width: 100%;" />
-	        <label>{{ decLabel }}</label>
-	        <input id="inputDecimal" type="text" v-model:value="inputDecimal" readonly="" style="width: 100%;" />
-	        <br>
-	        <button class="button-primary" @click="convertBin2Dec" style="width: 49.5%;">Convert!</button>
-	        <button class="button-warning" @click="isReset" style="width: 49.5%;">Reset!</button>
+	<div id="app">
+		<div class="container">
+			<menu-component></menu-component> 
+			<router-view></router-view>
 		</div>
-		<div class="one-half column" style="margin-top: 2%">
-			<h3>Your Binary is <b>{{ inputBinary }}</b></h3>
-			<h3>The Decimal is <b>{{ inputDecimal }}</b></h3>
-		</div>
-    </div>
-  </div>
+	</div>
 
-<script type="text/javascript">
+<script>
 	console.log(`#7Days7Websites`);
-    var app = new Vue({
-        el: "#app",
-        data: {
-        	binLabel: "Binary",
-            inputBinary: 0,
-            decLabel: "Decimal",
-            inputDecimal: 0
-        },
-		methods: {
-			isReset: function($event) {
-				this.inputBinary = 0;
-				this.inputDecimal = 0;
-			},
-			isNumber: function($event) {
-			   	let keyCode = ($event.keyCode ? $event.keyCode : $event.which);
-			   	if (keyCode === 49 || keyCode === 48) { // 49 is 1, 48 is 0
-			   		return true;
-			   	} else {
-			    	$event.preventDefault();;
-			   	}
-			},
-			convertBin2Dec: function(){
-				let biner = (this.inputBinary).toString();
-				let splitBiner = (biner.split('')).reverse();
 
-				var resultConvert = 0;
-				for(let i = splitBiner.length - 1; i >= 0; i--) {
-					resultConvert += (parseInt(splitBiner[i]) * (Math.pow(2, i)));
-				}
-
-				this.inputDecimal = resultConvert;
+	const routes = [
+		{
+			path: '/', component: {
+			  template: `
+			  	<div class="row">
+			  		<div class="column">
+			  			<h4>Home</h4>
+			  			<p>Go to menu trivia to have fun!...</p>
+			  		</div>
+			  	</div>
+			  `
 			}
-		}
-    })
+		}, {
+			path: '/trivia', component: {
+			  template: `
+			  	<div class="row">
+			  		<div class="column">
+			  			<h4>Trivia</h4>
+			  		</div>
+			  	</div>
+			  `
+			}
+		}, {
+			path: '/about', component: {
+			  template: `
+            <div class="row">
+				<div class="column">
+					<h4>About</h4>
 
+					<p>Have fun with Trivia Random Quiz...</p>
+					<p>Powered by <a href="https://opentdb.com/" target="_blank">OpenTB</a></p>
+				</div>
+			</div>
+			  `
+			}
+		},
+	]
+
+	const router = new VueRouter({
+	  routes // short for `routes: routes`
+	})
+
+	const app = new Vue({
+		router,
+		components: {
+          'menu-component': httpVueLoader('./component/trivia/menu-component.vue')
+        }
+	}).$mount('#app')
+
+	// Now the app has started!
 </script>
 <!-- End Document
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
