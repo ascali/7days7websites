@@ -16,7 +16,7 @@
 
   <!-- FONT
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+  <!-- <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css"> -->
 
   <!-- CSS
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
@@ -31,9 +31,11 @@
   <script src="js/vue.min.js"></script>
   <script src="js/vue-router.min.js"></script>
   <script src="js/httpVueLoader.js"></script>
+  <script src="js/axios.min.js"></script>
   <!-- JQuery -->
   <script src="js/jquery-3.4.1.min.js"></script>
   <script src="js/jquery.modal.min.js"></script>
+  <script src="js/notify.min.js"></script>
 
 </head>
 <body>
@@ -60,32 +62,170 @@
 			  `
 			}
 		}, {
-			path: '/trivia', component: {
+			path: '/trivia', 
+			component: {
+			  async mounted () {
+			  	$.notify("Loading get data...", "info");
+			  	$('#parameter_quiz').hide();
+		  		$('#main_quiz').hide();
+
+				let no_question = [10,20,30,40,50];
+				let difficulty_level = [{id: 0, name:"Any Difficult"}, {id: 1, name: "Easy"},{id: 2, name: "Normal"},{id: 3, name: "Hard"}];
+				let question_type = [{id: 0, name: "Any Type"},{id: 1, name: "Multiple Choice"},{id: 2, name: "True or False"}];
+				let count_down = [10,20,30,40,50];
+
+				axios.get('https://opentdb.com/api_category.php')
+				.then(function (response) {
+					let category = "";
+				    let categories = response.data.trivia_categories;
+				    categories.map(function(r,){
+				    	category += `<option value="${r.id}">${r.name}</option>`;
+				    });
+				    $('#category').html(category);
+				    $('#parameter_quiz').show(function(){
+				    	$(this).trigger('notify-hide');
+				    });
+				});
+
+				var is_no_question = '';
+				for (var i = 0; i < no_question.length; i++) {
+					is_no_question += `<option value="${no_question[i]}">${no_question[i]}</option>`;
+				}
+				$('#no_question').html(is_no_question);
+
+				let is_difficulty_level = "";
+			    difficulty_level.map(function(r,){
+			    	is_difficulty_level += `<option value="${r.id}">${r.name}</option>`;
+			    });
+			    $('#difficulty_level').html(is_difficulty_level);
+
+				let is_question_type = "";
+			    question_type.map(function(r,){
+			    	is_question_type += `<option value="${r.id}">${r.name}</option>`;
+			    });
+			    $('#question_type').html(is_question_type);
+
+				var is_count_down = '';
+				for (var i = 0; i < count_down.length; i++) {
+					is_count_down += `<option value="${count_down[i]}">${count_down[i]}</option>`;
+				}
+				$('#count_down').html(is_count_down);
+			  },
 			  template: `
-			  	<div class="row">
-			  		<div class="column">
-			  			<h4>Trivia</h4>
+			  	/* Quiz Parameter Part*/
+	  			<div class="row">
+	  				<div class="column" id="parameter_quiz">
+	  					<h4>Trivia</h4>
+	  					<u><b>Select Parameter to Start Quiz</b></u>
+	  					<form id="form_parameter_quiz">
 			  			<div class="row">
-			  				<div class="twelve column">
-			  					<label>Category</label>
-			  					<select class="u-full-width" id="category"></select>
+			  				<div class="twelve columns">
+			  					<label for="category">Category</label>
+			  					<select class="u-full-width" id="category" name="category">
+			  					</select>
 			  				</div>
 			  			</div>
-			  		</div>
-			  	</div>
-			  `
-			}
+			  			<div class="row">
+			  				<div class="six columns">
+			  					<label for="no_question">No. Question</label>
+			  					<select class="u-full-width" name="no_question" id="no_question"></select>
+			  				</div>
+			  				<div class="six columns">
+			  					<label for="difficulty_level">Difficulty Level</label>
+			  					<select class="u-full-width" id="difficulty_level" name="difficulty_level"></select>
+			  				</div>
+			  			</div>
+			  			<div class="row">
+			  				<div class="six columns">
+			  					<label for="question_type">Question Type</label>
+			  					<select class="u-full-width" id="question_type" name="question_type"></select>
+			  				</div>
+			  				<div class="six columns">
+			  					<label for="count_down">Count Down (In Minute)</label>
+			  					<select class="u-full-width" id="count_down" name="count_down"></select>
+			  				</div>
+			  			</div>
+			  			</form>
+			  			<div class="row">
+		  					<button v-on:click="startQuiz()" id="startQuiz" class="button-primary">Start Quiz</button>
+			  			</div>
+		  			</div>
+
+				  	<div class="row">
+				  		<div class="column" id="main_quiz">
+				  			<h4>Trivia Quiz</h4>
+				  			<hr>
+				  			<div class="row">
+				  				<div class="one-half column">
+				  					# Question No. 1 of 1
+				  				</div>
+				  				<div class="one-half column">
+				  					<div>Quiz end in <span id="time">05:00</span> minutes!</div>
+				  				</div>
+				  			</div>
+				  			<hr>
+				  			<p class="prettyprint" id="the_question_pane">
+				  				The Question : <span id="the_question">. . .</span>
+				  			</p>
+				  			<b>Please choose one of the following answers:</b>
+				  			<hr>
+				  			<div id="the_answer_pane">
+				  				<ol type="A" id="the_answer">
+				  					<li>Another answer</li>
+				  					<li>Another answer</li>
+				  					<li>Another answer</li>
+				  					<li>Another answer</li>
+				  				</ol>
+				  			</div>
+				  			<a href="javscript:void(0)" v-on:click="backToHome()">Back to Home</a>
+				  		</div>
+				  	</div>
+		  		</div>
+			  `,
+			  methods: { 
+			  	backToHome: function () {
+			    	$('#parameter_quiz').show();
+			  		$('#main_quiz').hide();
+			  	},
+			    startQuiz: function () {
+			    	$('#main_quiz').show();
+			    	$('#parameter_quiz').hide();
+			    	var form_parameter_quiz = $('#form_parameter_quiz').serialize();
+			    	console.log('form_parameter_quiz', form_parameter_quiz);
+			    	var fiveMinutes = 60 * parseInt($('#count_down').val()),
+				    display = document.querySelector('#time');
+				    this.startTimer(fiveMinutes, display);
+			    },
+			    startTimer: function(duration, display) {
+				    var timer = duration, minutes, seconds;
+				    setInterval(function () {
+				        minutes = parseInt(timer / 60, 10);
+				        seconds = parseInt(timer % 60, 10);
+
+				        minutes = minutes < 10 ? "0" + minutes : minutes;
+				        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+				        display.textContent = minutes + ":" + seconds;
+
+				        if (--timer < 0) {
+				            timer = duration;
+				        }
+				    }, 1000);
+				}
+			  },
+			},
+
 		}, {
 			path: '/about', component: {
 			  template: `
-            <div class="row">
-				<div class="column">
-					<h4>About</h4>
+	            <div class="row">
+					<div class="column">
+						<h4>About</h4>
 
-					<p>Have fun with Trivia Random Quiz...</p>
-					<p>Powered by <a href="https://opentdb.com/" target="_blank">OpenTB</a></p>
+						<p>Have fun with Trivia Random Quiz...</p>
+						<p>Powered by <a href="https://opentdb.com/" target="_blank">OpenTB</a></p>
+					</div>
 				</div>
-			</div>
 			  `
 			}
 		},
@@ -96,11 +236,17 @@
 	})
 
 	const app = new Vue({
+		el: '#app',
+		data: {
+			name: 'Trivia',
+			selectedCategory: 0,
+			categories: ''
+		},
 		router,
 		components: {
           'menu-component': httpVueLoader('./component/trivia/menu-component.vue')
         }
-	}).$mount('#app')
+	})
 
 	// Now the app has started!
 </script>
