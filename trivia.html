@@ -69,19 +69,22 @@
 			  	$('#parameter_quiz').hide();
 		  		$('#main_quiz').hide();
 
-				let no_question = [10,20,30,40,50];
-				let difficulty_level = [{id: 0, name:"Any Difficult"}, {id: 1, name: "Easy"},{id: 2, name: "Normal"},{id: 3, name: "Hard"}];
-				let question_type = [{id: 0, name: "Any Type"},{id: 1, name: "Multiple Choice"},{id: 2, name: "True or False"}];
-				let count_down = [10,20,30,40,50];
+				let no_question = [1,5,10,20,30,40,50];
+				let difficulty_level = [{id: 0, name:"Random Difficult"}, {id: "easy", name: "Easy"},{id: "medium", name: "Normal"},{id: "hard", name: "Hard"}];
+				let question_type = [{id: 0, name: "Random Type"},{id: "multiple", name: "Multiple Choice"},{id: "boolean", name: "True or False"}];
+				let count_down = [1,5,10,20,30,40,50];
 
 				axios.get('https://opentdb.com/api_category.php')
 				.then(function (response) {
 					let category = "";
+					$('#category').html(category);
 				    let categories = response.data.trivia_categories;
 				    categories.map(function(r,){
 				    	category += `<option value="${r.id}">${r.name}</option>`;
 				    });
 				    $('#category').html(category);
+				    $('#category').append(`<option selected value="0">Random Category</option>`);
+
 				    $('#parameter_quiz').show(function(){
 				    	$(this).trigger('notify-hide');
 				    });
@@ -160,7 +163,7 @@
 				  					# Question No. 1 of 1
 				  				</div>
 				  				<div class="one-half column">
-				  					<div>Quiz end in <span id="time">05:00</span> minutes!</div>
+				  					<div>Quiz end in <span id="time">00:00</span> minutes!</div>
 				  				</div>
 				  			</div>
 				  			<hr>
@@ -191,12 +194,46 @@
 			    startQuiz: function () {
 			    	$('#main_quiz').show();
 			    	$('#parameter_quiz').hide();
-			    	var form_parameter_quiz = $('#form_parameter_quiz').serialize();
-			    	console.log('form_parameter_quiz', form_parameter_quiz);
-			    	var fiveMinutes = 60 * parseInt($('#count_down').val()),
-				    display = document.querySelector('#time');
-				    this.startTimer(fiveMinutes, display);
+
+				    var amount = $('#no_question').val(), 
+				    category = $('#category').val(), 
+				    difficulty = $('#difficulty_level').val(), 
+				    type = $('#question_type').val();
+				    this.runQuiz(amount, category, difficulty, type);
 			    },
+				runQuiz: function(amount, category, difficulty, type){
+					console.log(amount, category, difficulty, type)
+					$.notify("Loading get data...", "info");
+
+					let mainUrlOpenTDb = `https://opentdb.com/api.php`;
+					var param = "";
+					if (category==0 && difficulty==0 && type==0) {
+						param = `amount=${amount}`;
+					} else if (category!=0 && difficulty==0 && type==0) {
+						param = `amount=${amount}&category=${category}`;
+					} else if (category!=0 && difficulty!=0 && type==0) {
+						param = `amount=${amount}&category=${category}&difficulty=${difficulty}`;
+					} else {
+						param = `amount=${amount}&category=${category}&difficulty=${difficulty}&type=${type}`;
+					}
+					let urlOpenTDb = `${mainUrlOpenTDb}?${param}`;
+
+					let inMinutes = 60 * parseInt($('#count_down').val());
+				    let display = document.querySelector('#time');
+					
+					axios.get(urlOpenTDb)
+					  .then((response) => {
+			    		if (response.data.response_code!=0) {
+			    			$.notify("Game can not start!", "warn");
+			    		} else {
+			    			let isData = response.data.results;
+			    			console.log('isData', isData.length);
+
+				    		this.startTimer(inMinutes, display);
+				    		$.notify("Game start!", "success");
+			    		}
+					  });
+				},
 			    startTimer: function(duration, display) {
 				    var timer = duration, minutes, seconds;
 				    setInterval(function () {
@@ -209,7 +246,8 @@
 				        display.textContent = minutes + ":" + seconds;
 
 				        if (--timer < 0) {
-				            timer = duration;
+				            // timer = duration;
+				            window.location.reload()
 				        }
 				    }, 1000);
 				}
